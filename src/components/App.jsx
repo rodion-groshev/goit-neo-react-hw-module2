@@ -6,24 +6,24 @@ import "./App.css";
 import { useEffect, useState } from "react";
 
 function App() {
-  const [feedbacks, setFeedbacks] = useState(
-    getLS()
-      ? getLS()
-      : {
-          good: 0,
-          neutral: 0,
-          bad: 0,
-        }
-  );
+  const getLS = () => {
+    const savedFeedback = window.localStorage.getItem("feedbacks");
+    if (savedFeedback) {
+      return JSON.parse(savedFeedback);
+    } else {
+      return {
+        good: 0,
+        neutral: 0,
+        bad: 0,
+      };
+    }
+  };
+
+  const [feedbacks, setFeedbacks] = useState(getLS);
 
   useEffect(() => {
     window.localStorage.setItem("feedbacks", JSON.stringify(feedbacks));
   }, [feedbacks]);
-
-  function getLS() {
-    const savedFeedback = window.localStorage.getItem("feedbacks");
-    return JSON.parse(savedFeedback);
-  }
 
   const updateFeedback = (feedbackType) => {
     setFeedbacks({ ...feedbacks, [feedbackType]: feedbacks[feedbackType] + 1 });
@@ -39,6 +39,7 @@ function App() {
   };
 
   const totalFeedback = feedbacks.good + feedbacks.neutral + feedbacks.bad;
+  const positiveFeedback = Math.round((feedbacks.good / totalFeedback) * 100);
 
   return (
     <>
@@ -49,7 +50,11 @@ function App() {
         clearFeedback={clearFeedback}
       />
       {totalFeedback ? (
-        <Feedback feedbacks={feedbacks} totalFeedback={totalFeedback} />
+        <Feedback
+          feedbacks={feedbacks}
+          totalFeedback={totalFeedback}
+          positiveFeedback={positiveFeedback}
+        />
       ) : (
         <Notification />
       )}
